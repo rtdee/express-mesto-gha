@@ -11,7 +11,7 @@ module.exports.postCard = (req, res) => {
     name, link,
   } = req.body;
 
-  Card.create({
+  Card.create(req.user._id, {
     name, link,
   })
     .then((card) => res.send({ card }))
@@ -26,11 +26,15 @@ module.exports.postCard = (req, res) => {
 
 module.exports.deleteCard = (req, res) => {
   Card.deleteOne(req.params.cardId)
-    .then((card) => res.send({ data: card }))
-    .catch((err) => {
-      if (err.name === 'CastError') {
+    .then((card) => {
+      if (card) {
+        res.send({ card });
+      } else {
         res.status(404).send({ message: `Карточка с ID ${req.params.cardId} не найдена` });
-      } else if (err.name === 'ValidationError') {
+      }
+    })
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
         res.status(400).send({ message: 'Введены некорректные данные' });
       } else {
         res.status(500).send({ message: 'На сервере произошла ошибка' });
@@ -40,11 +44,15 @@ module.exports.deleteCard = (req, res) => {
 
 module.exports.putLike = (req, res) => {
   Card.findByIdAndUpdate(req.params.cardId, { $addToSet: { likes: req.user._id } }, { new: true })
-    .then((card) => res.send({ data: card }))
-    .catch((err) => {
-      if (err.name === 'CastError') {
+    .then((card) => {
+      if (card) {
+        res.send({ card });
+      } else {
         res.status(404).send({ message: `Карточка с ID ${req.params.cardId} не найдена` });
-      } else if (err.name === 'ValidationError') {
+      }
+    })
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
         res.status(400).send({ message: 'Введены некорректные данные' });
       } else {
         res.status(500).send({ message: 'На сервере произошла ошибка' });
@@ -54,11 +62,15 @@ module.exports.putLike = (req, res) => {
 
 module.exports.deleteLike = (req, res) => {
   Card.updateOne(req.params.cardId, { $pull: { likes: req.user._id } }, { new: true })
-    .then((card) => res.send({ data: card }))
-    .catch((err) => {
-      if (err.name === 'CastError') {
+    .then((card) => {
+      if (card) {
+        res.send({ card });
+      } else {
         res.status(404).send({ message: `Карточка с ID ${req.params.cardId} не найдена` });
-      } else if (err.name === 'ValidationError') {
+      }
+    })
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
         res.status(400).send({ message: 'Введены некорректные данные' });
       } else {
         res.status(500).send({ message: 'На сервере произошла ошибка' });

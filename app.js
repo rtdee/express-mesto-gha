@@ -29,6 +29,9 @@ app.get('/', (req, res) => {
 app.get('*', (_req, res) => {
   res.status(404).send({ message: 'Не существует' });
 });
+app.patch('*', (_req, res) => {
+  res.status(404).send({ message: 'Не существует' });
+});
 
 app.listen(PORT, () => {
   // eslint-disable-next-line no-console
