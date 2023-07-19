@@ -40,7 +40,7 @@ module.exports.createUser = (req, res) => {
 
 module.exports.updateUser = (req, res) => {
   const { name, about } = req.body;
-  User.updateOne({ name, about })
+  User.updateOne(req.user._id, { name, about })
     .then((user) => res.send(user))
     .catch((err) => {
       if (err.name === 'ValidationError') {
@@ -53,7 +53,7 @@ module.exports.updateUser = (req, res) => {
 
 module.exports.updateAvatar = (req, res) => {
   const { avatar } = req.body;
-  User.updateOne({ avatar })
+  User.updateOne(req.user._id, { avatar })
     .then((user) => res.send(user))
     .catch((err) => {
       if (err.name === 'ValidationError') {

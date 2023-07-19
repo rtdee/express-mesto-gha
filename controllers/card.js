@@ -14,7 +14,7 @@ module.exports.postCard = (req, res) => {
   Card.create({
     name, link,
   })
-    .then((card) => res.send(card))
+    .then((card) => res.send({ card }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
         res.status(400).send({ message: 'Введены некорректные данные' });
