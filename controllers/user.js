@@ -43,7 +43,7 @@ module.exports.updateUser = (req, res) => {
   User.updateOne(req.user._id, { name, about })
     .then((user) => res.send(user))
     .catch((err) => {
-      if (err.name === 'CastError') {
+      if (err.name === 'ValidationError') {
         res.status(400).send({ message: 'Введены некорректные данные' });
       } else {
         res.status(500).send({ message: 'На сервере произошла ошибка' });
