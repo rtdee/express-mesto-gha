@@ -12,15 +12,15 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 mongoose.connect('mongodb://127.0.0.1:27017/mestodb');
 
-app.use('/', require('./routes/user'));
-app.use('/', require('./routes/card'));
-
 app.use((req, _res, next) => {
   req.user = {
     _id: '64b6734ade803381037d6f01',
   };
   next();
 });
+
+app.use('/', require('./routes/user'));
+app.use('/', require('./routes/card'));
 
 app.get('/', (req, res) => {
   res.send(req.query);
