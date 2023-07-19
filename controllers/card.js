@@ -19,7 +19,7 @@ module.exports.postCard = (req, res) => {
       if (err.name === 'ValidationError') {
         res.status(400).send({ message: 'Введены некорректные данные' });
       } else {
-        res.status(500).send({ message: 'Неизвестная ошибка' });
+        res.status(500).send({ message: 'На сервере произошла ошибка' });
       }
     });
 };
@@ -33,7 +33,7 @@ module.exports.deleteCard = (req, res) => {
       } else if (err.name === 'ValidationError') {
         res.status(400).send({ message: 'Введены некорректные данные' });
       } else {
-        res.status(500).send({ message: 'Неизвестная ошибка' });
+        res.status(500).send({ message: 'На сервере произошла ошибка' });
       }
     });
 };
@@ -47,7 +47,7 @@ module.exports.putLike = (req, res) => {
       } else if (err.name === 'ValidationError') {
         res.status(400).send({ message: 'Введены некорректные данные' });
       } else {
-        res.status(500).send({ message: 'Неизвестная ошибка' });
+        res.status(500).send({ message: 'На сервере произошла ошибка' });
       }
     });
 };
@@ -61,7 +61,7 @@ module.exports.deleteLike = (req, res) => {
       } else if (err.name === 'ValidationError') {
         res.status(400).send({ message: 'Введены некорректные данные' });
       } else {
-        res.status(500).send({ message: 'Неизвестная ошибка' });
+        res.status(500).send({ message: 'На сервере произошла ошибка' });
       }
     });
 };

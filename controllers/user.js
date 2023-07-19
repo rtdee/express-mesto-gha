@@ -2,20 +2,24 @@ const User = require('../models/user');
 
 module.exports.getUsers = (_req, res) => {
   User.find({})
-    .then((users) => res.send({ data: users }))
+    .then((users) => res.send({ users }))
     .catch(() => res.status(500).send({ message: 'Не удалось получить список пользователей' }));
 };
 
 module.exports.getUserById = (req, res) => {
   User.findById(req.params.userId)
-    .then((user) => res.send({ data: user }))
+    .then((user) => {
+      if (user) {
+        res.send({ user });
+      } else {
+        res.status(404).send({ message: `Пользователь с ID ${req.params.userId} не найден` });
+      }
+    })
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(404).send({ message: `Пользователь с ID ${req.params.userId} не найден` });
-      } else if (err.name === 'ValidationError') {
         res.status(400).send({ message: 'Введены некорректные данные' });
       } else {
-        res.status(500).send({ message: 'Неизвестная ошибка' });
+        res.status(500).send({ message: 'На сервере произошла ошибка' });
       }
     });
 };
@@ -29,7 +33,7 @@ module.exports.createUser = (req, res) => {
       if (err.name === 'ValidationError') {
         res.status(400).send({ message: 'Введены некорректные данные' });
       } else {
-        res.status(500).send({ message: 'Неизвестная ошибка' });
+        res.status(500).send({ message: 'На сервере произошла ошибка' });
       }
     });
 };
@@ -42,7 +46,7 @@ module.exports.updateUser = (req, res) => {
       if (err.name === 'ValidationError') {
         res.status(400).send({ message: 'Введены некорректные данные' });
       } else {
-        res.status(500).send({ message: 'Неизвестная ошибка' });
+        res.status(500).send({ message: 'На сервере произошла ошибка' });
       }
     });
 };
@@ -55,7 +59,7 @@ module.exports.updateAvatar = (req, res) => {
       if (err.name === 'ValidationError') {
         res.status(400).send({ message: 'Введены некорректные данные' });
       } else {
-        res.status(500).send({ message: 'Неизвестная ошибка' });
+        res.status(500).send({ message: 'На сервере произошла ошибка' });
       }
     });
 };
