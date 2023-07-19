@@ -8,13 +8,13 @@ module.exports.getCards = (_req, res) => {
 
 module.exports.postCard = (req, res) => {
   const {
-    name, link, owner, likes, createdAt,
+    name, link,
   } = req.body;
 
   Card.create({
-    name, link, owner, likes, createdAt,
+    name, link,
   })
-    .then((card) => res.send({ data: card }))
+    .then((card) => res.send(card))
     .catch((err) => {
       if (err.name === 'ValidationError') {
         res.status(400).send({ message: 'Введены некорректные данные' });
@@ -30,6 +30,8 @@ module.exports.deleteCard = (req, res) => {
     .catch((err) => {
       if (err.name === 'CastError') {
         res.status(404).send({ message: `Карточка с ID ${req.params.cardId} не найдена` });
+      } else if (err.name === 'ValidationError') {
+        res.status(400).send({ message: 'Введены некорректные данные' });
       } else {
         res.status(500).send({ message: 'Неизвестная ошибка' });
       }

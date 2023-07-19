@@ -12,6 +12,8 @@ module.exports.getUserById = (req, res) => {
     .catch((err) => {
       if (err.name === 'CastError') {
         res.status(404).send({ message: `Пользователь с ID ${req.params.userId} не найден` });
+      } else if (err.name === 'ValidationError') {
+        res.status(400).send({ message: 'Введены некорректные данные' });
       } else {
         res.status(500).send({ message: 'Неизвестная ошибка' });
       }
@@ -35,7 +37,7 @@ module.exports.createUser = (req, res) => {
 module.exports.updateUser = (req, res) => {
   const { name, about } = req.body;
   User.updateOne({ name, about })
-    .then((user) => res.send({ data: user }))
+    .then((user) => res.send(user))
     .catch((err) => {
       if (err.name === 'ValidationError') {
         res.status(400).send({ message: 'Введены некорректные данные' });
@@ -48,7 +50,7 @@ module.exports.updateUser = (req, res) => {
 module.exports.updateAvatar = (req, res) => {
   const { avatar } = req.body;
   User.updateOne({ avatar })
-    .then((user) => res.send({ data: user }))
+    .then((user) => res.send(user))
     .catch((err) => {
       if (err.name === 'ValidationError') {
         res.status(400).send({ message: 'Введены некорректные данные' });

@@ -26,6 +26,10 @@ app.get('/', (req, res) => {
   res.send(req.query);
 });
 
+app.get('*', (_req, res) => {
+  res.status(404).send({ message: 'Не существует' });
+});
+
 app.listen(PORT, () => {
   // eslint-disable-next-line no-console
   console.log(`App listening on port ${PORT}`);
