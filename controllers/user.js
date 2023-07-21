@@ -8,15 +8,14 @@ module.exports.getUsers = (_req, res) => {
 
 module.exports.getUserById = (req, res) => {
   User.findById(req.params.userId)
+    .orFail(new Error('NotFound'))
     .then((user) => {
-      if (user) {
-        res.send({ user });
-      } else {
-        res.status(404).send({ message: `Пользователь с ID ${req.params.userId} не найден` });
-      }
+      res.send({ user });
     })
     .catch((err) => {
-      if (err.name === 'CastError') {
+      if (err.name === 'NotFound') {
+        res.status(404).send({ message: `Пользователь с ID ${req.params.userId} не найден` });
+      } else if (err.name === 'CastError') {
         res.status(400).send({ message: 'Введены некорректные данные' });
       } else {
         res.status(500).send({ message: 'На сервере произошла ошибка' });
@@ -28,7 +27,9 @@ module.exports.createUser = (req, res) => {
   const { name, about, avatar } = req.body;
 
   User.create({ name, about, avatar })
-    .then((user) => res.send({ data: user }))
+    .then((user) => {
+      res.status(201).send({ data: user });
+    })
     .catch((err) => {
       if (err.name === 'ValidationError') {
         res.status(400).send({ message: 'Введены некорректные данные' });

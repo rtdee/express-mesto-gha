@@ -14,7 +14,9 @@ module.exports.postCard = (req, res) => {
   Card.create(req.user._id, {
     name, link,
   })
-    .then((card) => res.send({ card }))
+    .then((card) => {
+      res.status(201).send({ card });
+    })
     .catch((err) => {
       if (err.name === 'ValidationError') {
         res.status(400).send({ message: 'Введены некорректные данные' });
@@ -26,15 +28,16 @@ module.exports.postCard = (req, res) => {
 
 module.exports.deleteCard = (req, res) => {
   Card.deleteOne(req.params.cardId)
+    .orFail(new Error('NotFound'))
     .then((card) => {
       if (card) {
         res.send({ card });
-      } else {
-        res.status(404).send({ message: `Карточка с ID ${req.params.cardId} не найдена` });
       }
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
+      if (err.name === 'NotFound') {
+        res.status(404).send({ message: `Карточка с ID ${req.params.cardId} не найдена` });
+      } else if (err.name === 'ValidationError') {
         res.status(400).send({ message: 'Введены некорректные данные' });
       } else {
         res.status(500).send({ message: 'На сервере произошла ошибка' });
@@ -44,15 +47,16 @@ module.exports.deleteCard = (req, res) => {
 
 module.exports.putLike = (req, res) => {
   Card.findByIdAndUpdate(req.params.cardId, { $addToSet: { likes: req.user._id } }, { new: true })
+    .orFail(new Error('NotFound'))
     .then((card) => {
       if (card) {
         res.send({ card });
-      } else {
-        res.status(404).send({ message: `Карточка с ID ${req.params.cardId} не найдена` });
       }
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
+      if (err.name === 'NotFound') {
+        res.status(404).send({ message: `Карточка с ID ${req.params.cardId} не найдена` });
+      } else if (err.name === 'ValidationError') {
         res.status(400).send({ message: 'Введены некорректные данные' });
       } else {
         res.status(500).send({ message: 'На сервере произошла ошибка' });
@@ -62,15 +66,16 @@ module.exports.putLike = (req, res) => {
 
 module.exports.deleteLike = (req, res) => {
   Card.updateOne(req.params.cardId, { $pull: { likes: req.user._id } }, { new: true })
+    .orFail(new Error('NotFound'))
     .then((card) => {
       if (card) {
         res.send({ card });
-      } else {
-        res.status(404).send({ message: `Карточка с ID ${req.params.cardId} не найдена` });
       }
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
+      if (err.name === 'NotFound') {
+        res.status(404).send({ message: `Карточка с ID ${req.params.cardId} не найдена` });
+      } else if (err.name === 'ValidationError') {
         res.status(400).send({ message: 'Введены некорректные данные' });
       } else {
         res.status(500).send({ message: 'На сервере произошла ошибка' });
