@@ -23,6 +23,7 @@ app.post('/signin', login);
 app.post('/signup', createUser);
 
 app.use(auth);
+app.use(errorHandler);
 
 app.use('/', require('./routes/user'));
 app.use('/', require('./routes/card'));
@@ -37,8 +38,6 @@ app.get('*', (_req, res) => {
 app.patch('*', (_req, res) => {
   res.status(404).send({ message: 'Не существует' });
 });
-
-app.use(errorHandler);
 
 app.listen(PORT, () => {
   // eslint-disable-next-line no-console
