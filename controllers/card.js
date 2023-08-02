@@ -1,12 +1,15 @@
 const Card = require('../models/card');
+const BadRequestError = require('../errors/bad-request');
+const NotFoundError = require('../errors/not-found');
+const UnauthorizedError = require('../errors/unauthorized');
 
-module.exports.getCards = (_req, res) => {
+module.exports.getCards = (_req, res, next) => {
   Card.find({})
     .then((cards) => res.send({ cards }))
-    .catch(() => res.status(500).send({ message: 'Не удалось получить карточки' }));
+    .catch(next);
 };
 
-module.exports.postCard = (req, res) => {
+module.exports.postCard = (req, res, next) => {
   const {
     name, link,
   } = req.body;
@@ -15,37 +18,34 @@ module.exports.postCard = (req, res) => {
     name, link,
   })
     .then((card) => {
+      if (!card) {
+        throw new BadRequestError('Введены некорректные данные');
+      }
       res.status(201).send({ card });
     })
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(400).send({ message: 'Введены некорректные данные' });
-      } else {
-        res.status(500).send({ message: 'На сервере произошла ошибка' });
-      }
-    });
+    .catch(next);
 };
 
-module.exports.deleteCard = (req, res) => {
+module.exports.deleteCard = (req, res, next) => {
   Card.deleteOne(req.params.cardId)
     .orFail(new Error('NotFound'))
     .then((card) => {
-      if (card) {
-        res.send({ card });
+      if (card.owner._id !== req.params.userId) {
+        throw new UnauthorizedError('Нет доступа');
       }
+      res.send({ card });
     })
     .catch((err) => {
       if (err.name === 'NotFound') {
-        res.status(404).send({ message: `Карточка с ID ${req.params.cardId} не найдена` });
+        throw new NotFoundError(`Карточка с ID ${req.params.cardId} не найдена`);
       } else if (err.name === 'ValidationError') {
-        res.status(400).send({ message: 'Введены некорректные данные' });
-      } else {
-        res.status(500).send({ message: 'На сервере произошла ошибка' });
+        throw new BadRequestError('Введены некорректные данные');
       }
+      next();
     });
 };
 
-module.exports.putLike = (req, res) => {
+module.exports.putLike = (req, res, next) => {
   Card.findByIdAndUpdate(req.params.cardId, { $addToSet: { likes: req.user._id } }, { new: true })
     .orFail(new Error('NotFound'))
     .then((card) => {
@@ -55,16 +55,15 @@ module.exports.putLike = (req, res) => {
     })
     .catch((err) => {
       if (err.name === 'NotFound') {
-        res.status(404).send({ message: `Карточка с ID ${req.params.cardId} не найдена` });
+        throw new NotFoundError(`Карточка с ID ${req.params.cardId} не найдена`);
       } else if (err.name === 'ValidationError') {
-        res.status(400).send({ message: 'Введены некорректные данные' });
-      } else {
-        res.status(500).send({ message: 'На сервере произошла ошибка' });
+        throw new BadRequestError('Введены некорректные данные');
       }
+      next();
     });
 };
 
-module.exports.deleteLike = (req, res) => {
+module.exports.deleteLike = (req, res, next) => {
   Card.updateOne(req.params.cardId, { $pull: { likes: req.user._id } }, { new: true })
     .orFail(new Error('NotFound'))
     .then((card) => {
@@ -74,11 +73,10 @@ module.exports.deleteLike = (req, res) => {
     })
     .catch((err) => {
       if (err.name === 'NotFound') {
-        res.status(404).send({ message: `Карточка с ID ${req.params.cardId} не найдена` });
+        throw new NotFoundError(`Карточка с ID ${req.params.cardId} не найдена`);
       } else if (err.name === 'ValidationError') {
-        res.status(400).send({ message: 'Введены некорректные данные' });
-      } else {
-        res.status(500).send({ message: 'На сервере произошла ошибка' });
+        throw new BadRequestError('Введены некорректные данные');
       }
+      next();
     });
 };
