@@ -28,55 +28,39 @@ module.exports.postCard = (req, res, next) => {
 
 module.exports.deleteCard = (req, res, next) => {
   Card.deleteOne(req.params.cardId)
-    .orFail(new Error('NotFound'))
+    .orFail(new BadRequestError('Введены некорректные данные'))
     .then((card) => {
-      if (card.owner._id !== req.params.userId) {
+      if (card.owner !== req.user._id) {
         throw new UnauthorizedError('Нет доступа');
+      }
+      if (!card) {
+        throw new NotFoundError(`Карточка с ID ${req.params.cardId} не найдена`);
       }
       res.send({ card });
     })
-    .catch((err) => {
-      if (err.name === 'NotFound') {
-        throw new NotFoundError(`Карточка с ID ${req.params.cardId} не найдена`);
-      } else if (err.name === 'ValidationError') {
-        throw new BadRequestError('Введены некорректные данные');
-      }
-      next();
-    });
+    .catch(next);
 };
 
 module.exports.putLike = (req, res, next) => {
   Card.findByIdAndUpdate(req.params.cardId, { $addToSet: { likes: req.user._id } }, { new: true })
-    .orFail(new Error('NotFound'))
+    .orFail(new BadRequestError('Введены некорректные данные'))
     .then((card) => {
-      if (card) {
-        res.send({ card });
-      }
-    })
-    .catch((err) => {
-      if (err.name === 'NotFound') {
+      if (!card) {
         throw new NotFoundError(`Карточка с ID ${req.params.cardId} не найдена`);
-      } else if (err.name === 'ValidationError') {
-        throw new BadRequestError('Введены некорректные данные');
       }
-      next();
-    });
+      res.send({ card });
+    })
+    .catch(next);
 };
 
 module.exports.deleteLike = (req, res, next) => {
   Card.updateOne(req.params.cardId, { $pull: { likes: req.user._id } }, { new: true })
-    .orFail(new Error('NotFound'))
+    .orFail(new BadRequestError('Введены некорректные данные'))
     .then((card) => {
-      if (card) {
-        res.send({ card });
-      }
-    })
-    .catch((err) => {
-      if (err.name === 'NotFound') {
+      if (!card) {
         throw new NotFoundError(`Карточка с ID ${req.params.cardId} не найдена`);
-      } else if (err.name === 'ValidationError') {
-        throw new BadRequestError('Введены некорректные данные');
       }
-      next();
-    });
+      res.send({ card });
+    })
+    .catch(next);
 };

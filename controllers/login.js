@@ -6,7 +6,7 @@ module.exports.login = (req, res, next) => {
   const { email } = req.body;
 
   return User.findUserByCredentials({ email }.select('+password'))
-    .orFail(new Error('Unauthorized'))
+    .orFail(new UnauthorizedError('Неверные почта или пароль'))
     .then((user) => {
       const token = jwt.sign({ _id: user._id }, 'secretkey', { expiresIn: '7d' });
       res.cookie('jwt', token, {
@@ -14,10 +14,5 @@ module.exports.login = (req, res, next) => {
         httpOnly: true,
       }).end();
     })
-    .catch((err) => {
-      if (err.name === 'Unauthorized') {
-        throw new UnauthorizedError('Неверные почта или пароль');
-      }
-      next();
-    });
+    .catch(next);
 };

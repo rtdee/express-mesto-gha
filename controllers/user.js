@@ -17,18 +17,14 @@ module.exports.getUsers = (_req, res, next) => {
 
 module.exports.getUserById = (req, res, next) => {
   User.findById(req.params.userId)
-    .orFail(new Error('NotFound'))
+    .orFail(new BadRequestError('Введены некорректные данные'))
     .then((user) => {
+      if (!user) {
+        throw new NotFoundError(`Пользователь с ID ${req.params.userId} не найден`);
+      }
       res.send({ user });
     })
-    .catch((err) => {
-      if (err.name === 'NotFound') {
-        throw new NotFoundError(`Пользователь с ID ${req.params.userId} не найден`);
-      } else if (err.name === 'CastError' || err.name === 'ValidationError') {
-        throw new BadRequestError('Введены некорректные данные');
-      }
-      next();
-    });
+    .catch(next);
 };
 
 module.exports.createUser = (req, res, next) => {
@@ -37,57 +33,41 @@ module.exports.createUser = (req, res, next) => {
   } = req.body;
 
   bcrypt.hash(req.body.password, 10)
+    .orFail(new BadRequestError('Введены некорректные данные'))
     .then((hash) => User.create({
       name, about, avatar, email, password: hash,
     }))
     .then((user) => {
       res.status(201).send({ user });
     })
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        throw new BadRequestError('Введены некорректные данные');
-      }
-      next();
-    });
+    .catch(next);
 };
 
 module.exports.updateUser = (req, res, next) => {
   const { name, about } = req.body;
   User.updateOne(req.user._id, { name, about })
+    .orFail(new BadRequestError('Введены некорректные данные'))
     .then((user) => res.send({ user }))
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        throw new BadRequestError('Введены некорректные данные');
-      }
-      next();
-    });
+    .catch(next);
 };
 
 module.exports.updateAvatar = (req, res, next) => {
   const { avatar } = req.body;
   User.updateOne(req.user._id, { avatar })
+    .orFail(new BadRequestError('Введены некорректные данные'))
     .then((user) => res.send({ user }))
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        throw new BadRequestError('Введены некорректные данные');
-      }
-      next();
-    });
+    .catch(next);
 };
 
 module.exports.getUserMe = (req, res, next) => {
   const { email } = req.body;
   User.findOne({ email })
-    .orFail(new Error('NotFound'))
+    .orFail(new BadRequestError('Введены некорректные данные'))
     .then((user) => {
+      if (!user) {
+        throw new NotFoundError(`Пользователь с email ${email} не найден`);
+      }
       res.send({ user });
     })
-    .catch((err) => {
-      if (err.name === 'NotFound') {
-        throw new NotFoundError(`Пользователь с email ${email} не найден`);
-      } else if (err.name === 'CastError' || err.name === 'ValidationError') {
-        throw new BadRequestError('Введены некорректные данные');
-      }
-      next();
-    });
+    .catch(next);
 };
