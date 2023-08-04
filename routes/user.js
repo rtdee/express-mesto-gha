@@ -24,7 +24,7 @@ router.patch('/users/me', celebrate({
 router.patch('users/me/avatar', celebrate({
   body: Joi.object().keys({
     avatar: Joi.string() // eslint-disable-next-line no-useless-escape
-      .regex(/^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+$/gim)
+      .regex(/^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+$/i)
       .default('https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png'),
   }),
 }), updateAvatar);

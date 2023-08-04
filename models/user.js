@@ -21,7 +21,7 @@ const userSchema = new mongoose.Schema({
       // eslint-disable-next-line arrow-body-style
       validator: (v) => {
         // eslint-disable-next-line no-useless-escape
-        return /^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+$/gim.test(v);
+        return /^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+$/i.test(v);
       },
       message: 'Некорректный URL',
     },

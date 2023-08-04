@@ -4,10 +4,10 @@ const bodyParser = require('body-parser');
 const helmet = require('helmet');
 const cookieParser = require('cookie-parser');
 const { errors } = require('celebrate');
+const jwt = require('jsonwebtoken');
 const { createUser } = require('./controllers/user');
 const { login } = require('./controllers/login');
-const auth = require('./middlewares/auth');
-const errorHandler = require('./middlewares/errorHandler');
+const UnauthorizedError = require('./errors/unauthorized');
 
 const { PORT = 3000, DB_URL = 'mongodb://127.0.0.1:27017/mestodb' } = process.env;
 
@@ -23,7 +23,20 @@ mongoose.connect(DB_URL);
 app.post('/signin', login);
 app.post('/signup', createUser);
 
-app.use(auth);
+app.use((req, res, next) => {
+  const { token } = req.signedCookies;
+  if (!token) {
+    throw new UnauthorizedError('Требуется авторизация');
+  }
+  let payload;
+  try {
+    payload = jwt.verify(token);
+    req.user = payload;
+    next();
+  } catch (err) {
+    res.status(401).send({ message: 'Требуется авторизация' });
+  }
+});
 
 app.use('/', require('./routes/user'));
 app.use('/', require('./routes/card'));
@@ -37,7 +50,13 @@ app.all('*', (_req, res) => {
 });
 
 app.use(errors());
-app.use(errorHandler);
+// eslint-disable-next-line no-unused-vars
+app.use((err, _req, res, next) => {
+  if (!err.statusCode) {
+    res.status(500).send({ message: 'На сервере произошла ошибка' });
+  }
+  res.status(err.statusCode).send({ message: err.message });
+});
 
 app.listen(PORT, () => {
   // eslint-disable-next-line no-console
