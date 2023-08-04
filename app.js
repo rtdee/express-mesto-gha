@@ -37,7 +37,7 @@ app.all('*', (_req, res) => {
 });
 
 app.use(errors());
-app.use(errorHandler);
+app.use(errorHandler());
 
 app.listen(PORT, () => {
   // eslint-disable-next-line no-console
