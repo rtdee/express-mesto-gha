@@ -46,7 +46,7 @@ app.get('/', (req, res) => {
   res.send(req.query);
 });
 
-app.all('*', (_req, res, next) => {
+app.all('*', (_req, _res, next) => {
   next(new NotFoundError('Не существует'));
 });
 
