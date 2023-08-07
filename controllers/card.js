@@ -27,7 +27,7 @@ module.exports.postCard = (req, res, next) => {
 };
 
 module.exports.deleteCard = (req, res, next) => {
-  Card.deleteOne(req.params.cardId)
+  Card.findById(req.params.cardId)
     .orFail(new BadRequestError('Введены некорректные данные'))
     .then((card) => {
       if (card.owner !== req.user._id) {
@@ -36,6 +36,7 @@ module.exports.deleteCard = (req, res, next) => {
       if (!card) {
         throw new NotFoundError(`Карточка с ID ${req.params.cardId} не найдена`);
       }
+      card.deleteOne(req.params.cardId);
       res.send({ card });
     })
     .catch(next);

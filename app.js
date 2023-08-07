@@ -8,6 +8,7 @@ const jwt = require('jsonwebtoken');
 const { createUser } = require('./controllers/user');
 const { login } = require('./controllers/login');
 const UnauthorizedError = require('./errors/unauthorized');
+const NotFoundError = require('./errors/not-found');
 
 const { PORT = 3000, DB_URL = 'mongodb://127.0.0.1:27017/mestodb' } = process.env;
 
@@ -45,17 +46,18 @@ app.get('/', (req, res) => {
   res.send(req.query);
 });
 
-app.all('*', (_req, res) => {
-  res.status(404).send({ message: 'Не существует' });
+app.all('*', (_req, res, next) => {
+  next(new NotFoundError('Не существует'));
 });
 
 app.use(errors());
-// eslint-disable-next-line no-unused-vars
 app.use((err, _req, res, next) => {
   if (!err.statusCode) {
     res.status(500).send({ message: 'На сервере произошла ошибка' });
+  } else {
+    res.status(err.statusCode).send({ message: err.message });
   }
-  res.status(err.statusCode).send({ message: err.message });
+  next();
 });
 
 app.listen(PORT, () => {

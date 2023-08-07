@@ -1,5 +1,6 @@
 const router = require('express').Router();
 const { celebrate, Joi } = require('celebrate');
+const regexUrl = require('../utils/regexUrl');
 
 const {
   getUsers, getUserById, updateUser, updateAvatar, getUserMe,
@@ -8,7 +9,7 @@ const {
 router.get('/users', getUsers);
 router.get('/users/:userId', celebrate({
   params: Joi.object().keys({
-    userId: Joi.string().alphanum(),
+    userId: Joi.string().length(24).hex().required(),
   }),
 }), getUserById);
 router.patch('/users/me', celebrate({
@@ -23,8 +24,8 @@ router.patch('/users/me', celebrate({
 }), updateUser);
 router.patch('users/me/avatar', celebrate({
   body: Joi.object().keys({
-    avatar: Joi.string() // eslint-disable-next-line no-useless-escape
-      .regex(/^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+$/i)
+    avatar: Joi.string()
+      .regex(regexUrl)
       .default('https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png'),
   }),
 }), updateAvatar);
