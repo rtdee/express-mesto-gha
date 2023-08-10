@@ -9,10 +9,7 @@ module.exports.login = (req, res, next) => {
     .orFail(new UnauthorizedError('Неверные почта или пароль'))
     .then((user) => {
       const token = jwt.sign({ _id: user._id }, 'secretkey', { expiresIn: '7d' });
-      res.cookie('jwt', token, {
-        maxAge: 3600000 * 24 * 7,
-        httpOnly: true,
-      }).end();
+      res.send({ token });
     })
     .catch(next);
 };
