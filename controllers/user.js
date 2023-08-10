@@ -33,20 +33,25 @@ module.exports.createUser = (req, res, next) => {
   } = req.body;
 
   bcrypt.hash(req.body.password, 10)
-    .orFail(new BadRequestError('Введены некорректные данные'))
     .then((hash) => User.create({
       name, about, avatar, email, password: hash,
     }))
+    .orFail(new BadRequestError('Введены некорректные данные'))
     .then((user) => {
+      // eslint-disable-next-line no-param-reassign
+      delete user.password;
       res.status(201).send({ user });
     })
     .catch(next);
 };
 
 module.exports.updateUser = (req, res, next) => {
-  const { name, about } = req.body;
-  User.updateOne(req.user._id, { name, about })
+  const { name, about, email } = req.body;
+  bcrypt.hash(req.body.password, 10)
     .orFail(new BadRequestError('Введены некорректные данные'))
+    .then((hash) => User.updateOne(req.user._id, {
+      name, about, email, password: hash,
+    }))
     .then((user) => res.send({ user }))
     .catch(next);
 };

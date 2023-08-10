@@ -24,18 +24,18 @@ mongoose.connect(DB_URL);
 app.post('/signin', login);
 app.post('/signup', createUser);
 
-app.use((req, res, next) => {
+app.use((req, _res, next) => {
   const { token } = req.signedCookies;
   if (!token) {
     throw new UnauthorizedError('Требуется авторизация');
   }
   let payload;
   try {
-    payload = jwt.verify(token);
+    payload = jwt.verify(token, 'secretkey');
     req.user = payload;
     next();
   } catch (err) {
-    res.status(401).send({ message: 'Требуется авторизация' });
+    next(new UnauthorizedError('Требуется авторизация'));
   }
 });
 
@@ -54,6 +54,8 @@ app.use(errors());
 app.use((err, _req, res, next) => {
   if (!err.statusCode) {
     res.status(500).send({ message: 'На сервере произошла ошибка' });
+  } else if (err.statusCode === 11000) {
+    res.status(409).send({ message: 'Пользователь уже существует' });
   } else {
     res.status(err.statusCode).send({ message: err.message });
   }

@@ -45,7 +45,7 @@ const userSchema = new mongoose.Schema({
 
 // eslint-disable-next-line func-names
 userSchema.statics.findUserByCredentials = function (email, password, next) {
-  return this.findOne({ email })
+  return this.findOne({ email }).select('+password')
     .then((user) => {
       if (!user) {
         throw new UnauthorizedError('Неверные почта или пароль');
