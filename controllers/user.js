@@ -3,6 +3,7 @@ const User = require('../models/user');
 const BadRequestError = require('../errors/bad-request');
 const NotFoundError = require('../errors/not-found');
 const InternalServerError = require('../errors/internal-server');
+const ConflictError = require('../errors/conflict');
 
 module.exports.getUsers = (_req, res, next) => {
   User.find({})
@@ -35,30 +36,30 @@ module.exports.createUser = (req, res, next) => {
   bcrypt.hash(req.body.password, 10)
     .then((hash) => User.create({
       name, about, avatar, email, password: hash,
-    }))
-    .orFail(new BadRequestError('Введены некорректные данные'))
-    .then((user) => {
-      // eslint-disable-next-line no-param-reassign
-      delete user.password;
-      res.status(201).send({ user });
     })
-    .catch(next);
+      .then((user) => {
+      // eslint-disable-next-line no-param-reassign
+        user.password = undefined;
+        res.status(201).send({ user });
+      })
+      .catch((err) => {
+        if (err.code === 11000) {
+          next(new ConflictError('Пользователь уже существует'));
+        }
+        next();
+      }));
 };
 
 module.exports.updateUser = (req, res, next) => {
-  const { name, about, email } = req.body;
-  bcrypt.hash(req.body.password, 10)
-    .orFail(new BadRequestError('Введены некорректные данные'))
-    .then((hash) => User.updateOne(req.user._id, {
-      name, about, email, password: hash,
-    }))
+  const { name, about } = req.body;
+  User.findByIdAndUpdate(req.user._id, { name, about })
     .then((user) => res.send({ user }))
     .catch(next);
 };
 
 module.exports.updateAvatar = (req, res, next) => {
   const { avatar } = req.body;
-  User.updateOne(req.user._id, { avatar })
+  User.findByIdAndUpdate(req.user._id, { avatar })
     .orFail(new BadRequestError('Введены некорректные данные'))
     .then((user) => res.send({ user }))
     .catch(next);

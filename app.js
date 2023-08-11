@@ -57,8 +57,6 @@ app.use(errors());
 app.use((err, _req, res, next) => {
   if (!err.statusCode) {
     res.status(500).send({ message: 'На сервере произошла ошибка' });
-  } else if (err.statusCode === 11000) {
-    res.status(409).send({ message: 'Пользователь уже существует' });
   } else {
     res.status(err.statusCode).send({ message: err.message });
   }

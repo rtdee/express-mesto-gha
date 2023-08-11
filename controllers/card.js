@@ -1,7 +1,7 @@
 const Card = require('../models/card');
 const BadRequestError = require('../errors/bad-request');
 const NotFoundError = require('../errors/not-found');
-const UnauthorizedError = require('../errors/unauthorized');
+const ForbiddenError = require('../errors/forbidden');
 
 module.exports.getCards = (_req, res, next) => {
   Card.find({})
@@ -14,9 +14,7 @@ module.exports.postCard = (req, res, next) => {
     name, link,
   } = req.body;
 
-  Card.create(req.user._id, {
-    name, link,
-  })
+  Card.create({ name, link, owner: req.user._id })
     .then((card) => {
       if (!card) {
         throw new BadRequestError('Введены некорректные данные');
@@ -30,13 +28,13 @@ module.exports.deleteCard = (req, res, next) => {
   Card.findById(req.params.cardId)
     .orFail(new BadRequestError('Введены некорректные данные'))
     .then((card) => {
-      if (card.owner !== req.user._id) {
-        throw new UnauthorizedError('Нет доступа');
+      if (card.owner.toString() !== req.user._id) {
+        throw new ForbiddenError('Нет доступа');
       }
       if (!card) {
         throw new NotFoundError(`Карточка с ID ${req.params.cardId} не найдена`);
       }
-      card.deleteOne(req.params.cardId)
+      card.deleteOne(card)
         .then(res.send({ card }));
     })
     .catch(next);
@@ -55,7 +53,7 @@ module.exports.putLike = (req, res, next) => {
 };
 
 module.exports.deleteLike = (req, res, next) => {
-  Card.updateOne(req.params.cardId, { $pull: { likes: req.user._id } }, { new: true })
+  Card.findByIdAndUpdate(req.params.cardId, { $pull: { likes: req.user._id } }, { new: true })
     .orFail(new BadRequestError('Введены некорректные данные'))
     .then((card) => {
       if (!card) {
